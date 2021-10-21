@@ -5,7 +5,7 @@ import scott.reactor.core.CorePublisher
 import scott.reactor.core.subscribe
 import scott.reactor.operations.*
 
-fun <T> List<Publisher<T>>.toMonoOfList() : Publisher<List<T>> = concat(this).collectList()
+fun <T> List<Publisher<T>>.toMonoOfList() : Publisher<List<T>> = concat().collectList()
 
 fun main(args: Array<String>) {
 
