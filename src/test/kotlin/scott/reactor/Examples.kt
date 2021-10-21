@@ -128,7 +128,7 @@ class Examples {
         //create 100 publishers for numbers 1..100, concat them together and subscribe
         val complexPublisher = (1..100).map { i ->  numbersPublisher.filter { it == i }.next()  }.concat().collectList()
 
-        complexPublisher.map { list -> list.filter { it % 1 == 0 } }.subscribe { listOfNumbers -> results1.add(listOfNumbers) }
+        complexPublisher.subscribe { listOfNumbers -> results1.add(listOfNumbers) }
         complexPublisher.map { list -> list.filter { it % 2 == 0 } }.subscribe { listOfNumbers -> results2.add(listOfNumbers) }
         complexPublisher.map { list -> list.filter { it % 3 == 0 } }.subscribe { listOfNumbers -> results3.add(listOfNumbers) }
 
@@ -138,6 +138,23 @@ class Examples {
         assertThat(results1).isEqualTo(listOf((1..100).toList()))
         assertThat(results2).isEqualTo(listOf((1..100).filter { it % 2 == 0 }.toList()))
         assertThat(results3).isEqualTo(listOf((1..100).filter { it % 3 == 0 }.toList()))
+    }
+
+    @Test
+    fun `flatmap to subscribe to the combination of two different Publishers`() {
+        val agePublisher = CorePublisher<Int>()
+        val namePublisher = CorePublisher<String>()
+        val result = mutableListOf<String>()
+
+        /*
+         * subscribe to the publication of age '10' and name 'John' and combine both in an output which we subscribe to.
+         */
+        agePublisher.filter { it ==10 }.flatMap { number10 -> namePublisher.filter { it == "John" }.map { name -> "$name is $number10 years old" } }.subscribe {  result.add(it) }
+
+        (1..10).forEach { agePublisher.emitNext(it) }
+        listOf("Fred", "Ian", "John").forEach { namePublisher.emitNext(it) }
+
+        assertThat(result).isEqualTo(listOf(("John is 10 years old")))
     }
 
 }
