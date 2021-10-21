@@ -72,16 +72,16 @@ class Examples {
         val source = listOf(1,2,3,4,5,5,5,5)
         source.forEach { i -> numbersPublisher.emitNext(i) }
 
-        assertThat(results).isEqualTo(source.first { it == 5 }.let { listOf(it) })
+        assertThat(results).isEqualTo(listOf(5))
     }
 
     @Test
-    fun `100 single publisher-and-subscription example`() {
+    fun `1 publisher decorated by 100 child filer+next publishers publisher-and-subscription example`() {
         val numbersPublisher = CorePublisher<Int>()
         //set up an array of 100 MutableLists for the upcoming 100 'next' subscriptions
         val results = (1..100).map { mutableListOf<Int>() }.toTypedArray()
 
-        //create 100 publishers for numbers 1..100, each one has it's own subscription
+        //create 100 publishers from the numbersPublisher for numbers 1..100, each one has it's own subscription
         (1..100).map { i ->  numbersPublisher.filter { it == i }.next().subscribe { results[i-1].add(it) }  }
         //publish the numbers 1..100 twice
         (1..2).forEach { (1..100).forEach { i -> numbersPublisher.emitNext(i) } }
@@ -91,11 +91,11 @@ class Examples {
     }
 
     @Test
-    fun `100 single publishers concatenated into a single publisher - and subscribed to`() {
+    fun `1 publisher decorated by 100 child filter+next publishers which are all then concatenated back together into a single publisher - pointless but fun`() {
         val numbersPublisher = CorePublisher<Int>()
         val results = mutableListOf<Int>()
 
-        //create 100 publishers for numbers 1..100, concat them together and subscribe
+        //create 100 publishers from the numbersPublisher for numbers 1..100, concat them together and subscribe
         (1..100).map { i ->  numbersPublisher.filter { it == i }.next()  }.concat().subscribe { results.add(it) }
         //publish the numbers 1..100 twice
         (1..2).forEach { (1..100).forEach { i -> numbersPublisher.emitNext(i) } }
@@ -105,11 +105,11 @@ class Examples {
     }
 
     @Test
-    fun `100 single publishers, concatenated into a single publisher, collected into a publisher which emits a single List event completion - and subscribed to`() {
+    fun `1 publisher decorated by 100 single filter+next publishers which are then concatenated back into a single publisher and then collected into a single List which is emitted upon completion`() {
         val numbersPublisher = CorePublisher<Int>()
         val results = mutableListOf<List<Int>>()
 
-        //create 100 publishers for numbers 1..100, concat them together and subscribe
+        //create 100 publishers from the numbersPublisher for numbers 1..100, concat them together and collect all into a list  and subscribe
         (1..100).map { i ->  numbersPublisher.filter { it == i }.next()  }.concat().collectList().subscribe { listOfNumbers -> results.add(listOfNumbers) }
         //publish the numbers 1..100 twice
         (1..2).forEach { (1..100).forEach { i -> numbersPublisher.emitNext(i) } }
@@ -125,16 +125,17 @@ class Examples {
         val results2 = mutableListOf<List<Int>>()
         val results3 = mutableListOf<List<Int>>()
 
-        //create 100 publishers for numbers 1..100, concat them together and subscribe
+        //create 100 publishers from the numbersPublisher for numbers 1..100, concat them together and collect all into a list
         val complexPublisher = (1..100).map { i ->  numbersPublisher.filter { it == i }.next()  }.concat().collectList()
 
+        //subscribe to that in 3 different ways, to see that the subscriptions are completely independent
         complexPublisher.subscribe { listOfNumbers -> results1.add(listOfNumbers) }
         complexPublisher.map { list -> list.filter { it % 2 == 0 } }.subscribe { listOfNumbers -> results2.add(listOfNumbers) }
         complexPublisher.map { list -> list.filter { it % 3 == 0 } }.subscribe { listOfNumbers -> results3.add(listOfNumbers) }
 
         (1..100).forEach { i -> numbersPublisher.emitNext(i) }
 
-        //each result is correctly populated from the subscription
+        //each result is correctly (and independently) populated from the subscription
         assertThat(results1).isEqualTo(listOf((1..100).toList()))
         assertThat(results2).isEqualTo(listOf((1..100).filter { it % 2 == 0 }.toList()))
         assertThat(results3).isEqualTo(listOf((1..100).filter { it % 3 == 0 }.toList()))
