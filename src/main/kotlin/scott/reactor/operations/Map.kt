@@ -29,4 +29,3 @@ class MappedSubscriber<SOURCE, DEST>(val mapper: (SOURCE) -> DEST, val subscribe
     override fun onComplete() = subscriber.onComplete()
 }
 
-fun <SOURCE, DEST> Publisher<SOURCE>.map(mapper: (SOURCE) -> DEST) = MappedPublisher(mapper, this)

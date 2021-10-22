@@ -23,13 +23,10 @@ class CorePublisher<T> : Publisher<T> {
     /**
      * programmer friendly way to get the publisher to emit something
      */
-    fun emitNext(event : T) : CorePublisher<T> {
+    fun emitNext(vararg events : T) {
         if (!completed.get()) {
-            synchronized(subs) { subs.toList() }.forEach { it.publish(event) }
-        } else {
-            println("COMPLETED")
+            synchronized(subs) { subs.toList() }.forEach { events.forEach { e ->it.publish(e) } }
         }
-        return this
     }
 
     /**

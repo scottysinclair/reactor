@@ -39,4 +39,3 @@ class FlatMapSubscriber<SOURCE, DEST>(val flatMapper: (SOURCE) -> Publisher<DEST
  * events being emitted
  */
 
-fun <T, DEST> Publisher<T>.flatMap(mapper: (T) -> Publisher<DEST>): Publisher<DEST> = FlatMapPublisher(mapper, this)

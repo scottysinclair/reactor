@@ -3,6 +3,7 @@ package scott.reactor.operations
 import org.reactivestreams.Publisher
 import org.reactivestreams.Subscriber
 import org.reactivestreams.Subscription
+import scott.reactor.api.presentAsMono
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -50,5 +51,3 @@ class NextSubscriber<T>(val subscriber: Subscriber<in T>) : Subscriber<T> {
     }
 }
 
-
-fun <T> Publisher<T>.next() = NextPublisher(this)

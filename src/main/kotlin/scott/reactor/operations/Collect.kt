@@ -35,5 +35,3 @@ class CollectSubscriber<T>(val subscriber: Subscriber<in List<T>>) : Subscriber<
 }
 
 
-fun <T> Publisher<T>.collectList() : Publisher<List<T>> = CollectPublisher(this)
-

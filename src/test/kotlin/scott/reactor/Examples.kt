@@ -2,15 +2,14 @@ package scott.reactor
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import scott.reactor.core.CorePublisher
 import scott.reactor.core.subscribe
-import scott.reactor.operations.*
+import scott.reactor.api.*
 
 class Examples {
 
     @Test
     fun `direct subscription 100 numbers`() {
-        val numbersPublisher = CorePublisher<Int>()
+        val numbersPublisher = Sinks.many<Int>()
         val results = mutableListOf<Int>()
 
         numbersPublisher.subscribe {  results.add(it) }
@@ -21,7 +20,7 @@ class Examples {
 
     @Test
     fun `direct subscription 100 strings`() {
-        val numbersPublisher = CorePublisher<String>()
+        val numbersPublisher = Sinks.many<String>()
         val results = mutableListOf<String>()
 
         numbersPublisher.subscribe {  results.add(it) }
@@ -32,7 +31,7 @@ class Examples {
 
     @Test
     fun `simple map example`() {
-        val numbersPublisher = CorePublisher<Int>()
+        val numbersPublisher = Sinks.many<Int>()
         val results = mutableListOf<String>()
 
         numbersPublisher.map { "number $it" }.subscribe {  results.add(it) }
@@ -43,7 +42,7 @@ class Examples {
 
     @Test
     fun `simple filter example`() {
-        val numbersPublisher = CorePublisher<Int>()
+        val numbersPublisher = Sinks.many<Int>()
         val results = mutableListOf<Int>()
 
         numbersPublisher.filter { it % 2 == 0 }.subscribe {  results.add(it) }
@@ -54,10 +53,10 @@ class Examples {
 
     @Test
     fun `map and filter example`() {
-        val numbersPublisher = CorePublisher<Int>()
+        val numbersPublisher = Sinks.many<Int>()
         val results = mutableListOf<String>()
 
-        numbersPublisher.filter { it % 2 == 0 }.map { "number $it" }.subscribe {  results.add(it) }
+        numbersPublisher.filter { it % 2 == 0 }  .map { "number $it" }.subscribe {  results.add(it) }
         (1..100).forEach { i -> numbersPublisher.emitNext(i) }
 
         assertThat(results).isEqualTo((1..100).filter { it % 2 == 0 }.map { "number $it" }.toList())
@@ -65,7 +64,7 @@ class Examples {
 
     @Test
     fun `next example`() {
-        val numbersPublisher = CorePublisher<Int>()
+        val numbersPublisher = Sinks.many<Int>()
         val results = mutableListOf<Int>()
 
         numbersPublisher.filter { it == 5 }.next().subscribe {  results.add(it) }
@@ -77,7 +76,7 @@ class Examples {
 
     @Test
     fun `1 publisher decorated by 100 child filer+next publishers publisher-and-subscription example`() {
-        val numbersPublisher = CorePublisher<Int>()
+        val numbersPublisher = Sinks.many<Int>()
         //set up an array of 100 MutableLists for the upcoming 100 'next' subscriptions
         val results = (1..100).map { mutableListOf<Int>() }.toTypedArray()
 
@@ -92,7 +91,7 @@ class Examples {
 
     @Test
     fun `1 publisher decorated by 100 child filter+next publishers which are all then concatenated back together into a single publisher - pointless but fun`() {
-        val numbersPublisher = CorePublisher<Int>()
+        val numbersPublisher = Sinks.many<Int>()
         val results = mutableListOf<Int>()
 
         //create 100 publishers from the numbersPublisher for numbers 1..100, concat them together and subscribe
@@ -106,7 +105,7 @@ class Examples {
 
     @Test
     fun `1 publisher decorated by 100 single filter+next publishers which are then concatenated back into a single publisher and then collected into a single List which is emitted upon completion`() {
-        val numbersPublisher = CorePublisher<Int>()
+        val numbersPublisher = Sinks.many<Int>()
         val results = mutableListOf<List<Int>>()
 
         //create 100 publishers from the numbersPublisher for numbers 1..100, concat them together and collect all into a list  and subscribe
@@ -120,7 +119,7 @@ class Examples {
 
     @Test
     fun `regardless of complexity - of a chain of decorated Publishers - the  Publisher 'facing the programmer' is always subscribed to  independently as much as we want - as they are only factories for decorated subscriptions`() {
-        val numbersPublisher = CorePublisher<Int>()
+        val numbersPublisher = Sinks.many<Int>()
         val results1 = mutableListOf<List<Int>>()
         val results2 = mutableListOf<List<Int>>()
         val results3 = mutableListOf<List<Int>>()
@@ -143,8 +142,8 @@ class Examples {
 
     @Test
     fun `flatmap to subscribe to the combination of two different Publishers`() {
-        val agePublisher = CorePublisher<Int>()
-        val namePublisher = CorePublisher<String>()
+        val agePublisher = Sinks.many<Int>()
+        val namePublisher = Sinks.many<String>()
         val result = mutableListOf<String>()
 
         /*
@@ -160,12 +159,12 @@ class Examples {
 
     @Test
     fun `flatMap conversion from Publisher List of item to Publisher item  Publishers - flatmap is good for splitting things up`() {
-        val listPublisher = CorePublisher<List<Int>>()
+        val listPublisher = Sinks.many<List<Int>>()
         val result = mutableListOf<Int>()
 
         //classic flatmap List<List<T>> to List<T> or in reactor world Publisher<List<T>> Publisher<T>
         listPublisher.flatMap { list ->
-            val singlePublisher = CorePublisher<Int>()
+            val singlePublisher = Sinks.many<Int>()
             singlePublisher.buffer().also {
                 list.forEach { singlePublisher.emitNext(it) } // then emit the each list element into it
                 singlePublisher.complete()  //complete the publisher, allowing the buffer to be reclaimed (the subscriber which is notified of completion (onComplete()) is an internal subscriber created by the flatmap, NOT the end susbscriber.

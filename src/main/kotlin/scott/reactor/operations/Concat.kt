@@ -100,5 +100,3 @@ class ConcatSubscriber<T>(val subscriber: Subscriber<in T>, publishers: List<Pub
     }
 }
 
-
-fun <T> List<Publisher<T>>.concat(): Publisher<T> = ConcatPublisher(this)

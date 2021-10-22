@@ -1,15 +1,15 @@
 package scott.reactor
 
 import org.reactivestreams.Publisher
-import scott.reactor.core.CorePublisher
+import scott.reactor.api.Sinks
 import scott.reactor.core.subscribe
-import scott.reactor.operations.*
+import scott.reactor.api.*
 
-fun <T> List<Publisher<T>>.toMonoOfList() : Publisher<List<T>> = concat().collectList()
+fun <T> List<Publisher<T>>.toMonoOfList() : Mono<List<T>> = concat().collectList()
 
 fun main(args: Array<String>) {
 
-    val numberPublisher = CorePublisher<Int>()
+    val numberPublisher = Sinks.many<Int>()
 
     /**
      * subscribe to all numbers between 1 and 10, converting thenm to strings and printing them
@@ -51,7 +51,7 @@ fun main(args: Array<String>) {
     /*
      * flatmap example, the next cheeze has to be published and the numbers from 20 to 30 before the subscription will receive anything
      */
-    val foodPublisher = CorePublisher<String>()
+    val foodPublisher = Sinks.many<String>()
     val theNextCheesePublisher = foodPublisher.filter { it == "cheese" }.next()
     theNextCheesePublisher.flatMap {
         mono20_to_30.map {
@@ -77,7 +77,7 @@ fun main(args: Array<String>) {
     /*
      * Publish the food, this should cause the message "the next cheeze was published and we also got the numbers" to be printed to the console
      */
-    foodPublisher.emitNext("bread").emitNext("cheese").emitNext("sausages")
+    foodPublisher.emitNext("bread", "cheese", "sausages")
 
 
 }

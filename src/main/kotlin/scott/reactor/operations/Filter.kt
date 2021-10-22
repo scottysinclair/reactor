@@ -33,5 +33,3 @@ class FilteredSubscriber<T>(val predicate: (T) -> Boolean, val subscriber: Subsc
     override fun onComplete() = subscriber.onComplete()
 }
 
-
-fun <T> Publisher<T>.filter(predicate: (T) -> Boolean) = FilteredPublisher(predicate, this)

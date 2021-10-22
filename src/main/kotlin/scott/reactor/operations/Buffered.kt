@@ -161,5 +161,3 @@ class BufferedSubscription<T>(val bufferedSubscriber: BufferedSubscriber<T>, val
     }
 }
 
-
-fun <T> Publisher<T>.buffer() = BufferedPublisher(this)
