@@ -10,8 +10,10 @@ import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Subscriptions to BufferedPublisher will receive all emitted events from the time the BufferedPublisher was created.
+ * The BufferedPublisher subscribes to the parentPublisher immediately (in order to get the data upfront even if there is noone subscribing to it)
+ * The BufferedPublisher then cancels the subscription to the parentPublisher when it's last subscriber is removed
  */
-class BufferedPublisher<T>(val parentPublisher: Publisher<T>) : Publisher<T> {
+class BufferedPublisher<T>(parentPublisher: Publisher<T>) : Publisher<T> {
     val bufferedSubscriber = BufferedSubscriber<T>()
     init {
         /*
@@ -91,6 +93,9 @@ class BufferedSubscriber<T> : Subscriber<T> {
      */
     fun remove(bufferedSubscription: BufferedSubscription<T>) {
         subscriptions.remove(bufferedSubscription)
+        if (subscriptions.isEmpty()) {
+            subscriptionToParent.cancel()
+        }
     }
 
     fun parentPublisherCompleted() = parentPublisherCompleted.get()

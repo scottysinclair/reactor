@@ -33,6 +33,13 @@ class CorePublisher<T> : Publisher<T> {
     }
 
     /**
+     * programmer friendly way to get the Publisher to complete
+     */
+    fun complete() {
+        synchronized(subs) { subs.toList() }.forEach { it.complete() }
+    }
+
+    /**
      * Called by subscriptions when they are cancelled
      */
     private fun cancelSub(sub : Subscription) {

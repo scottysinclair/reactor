@@ -15,6 +15,7 @@ class CoreSubscription<T>(val cancelSub : (Subscription) -> Unit, val subscriber
      */
     private var subscribersCapacity = AtomicLong(0)
     private val queue = mutableListOf<T>()
+    private val publisherCompleted = AtomicBoolean(false)
     private val terminated = AtomicBoolean(false)
 
     /**
@@ -26,7 +27,16 @@ class CoreSubscription<T>(val cancelSub : (Subscription) -> Unit, val subscriber
         drain()
     }
 
-    fun drain() = queue.syncExtractMax(subscribersCapacity.get()).forEach { subscriber.onNext(it).also { subscribersCapacity.decrementAndGet() } }
+    fun drain() {
+        queue.syncExtractMax(subscribersCapacity.get())
+            .forEach { subscriber.onNext(it).also { subscribersCapacity.decrementAndGet() } }
+        /*
+         * if we have sent everything we have and the publisher is complete then tell the subcriber that we are done
+         */
+        if (queue.isEmpty() && publisherCompleted.get()) {
+            subscriber.onComplete()
+        }
+    }
 
     /**
      * The subscriber is requesting the publisher to send some data if it can
@@ -37,7 +47,15 @@ class CoreSubscription<T>(val cancelSub : (Subscription) -> Unit, val subscriber
                 if (numberOfEventsRequested > Long.MAX_VALUE - c) Long.MAX_VALUE
                 else c + numberOfEventsRequested
             }
+            drain()
         }
+    }
+
+    /**
+     * Called by the publisher when it completes
+     */
+    fun complete() {
+        publisherCompleted.set(true)
     }
 
     /**
