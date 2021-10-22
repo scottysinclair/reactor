@@ -159,24 +159,20 @@ class Examples {
     }
 
     @Test
-    fun `classic flatMap  conversion from Publisher List to Publisher Item  Publishers`() {
+    fun `flatMap conversion from Publisher List of item to Publisher item  Publishers - flatmap is good for splitting things up`() {
         val listPublisher = CorePublisher<List<Int>>()
         val result = mutableListOf<Int>()
 
-
-
         //classic flatmap List<List<T>> to List<T> or in reactor world Publisher<List<T>> Publisher<T>
         listPublisher.flatMap { list ->
-            CorePublisher<Int>().let { singlePublisher ->
-                    singlePublisher.buffer().apply { //create a new buffered Publisher of single element <T>
-                        list.forEach { singlePublisher.emitNext(it) } // then emit the each list element into it
-                        singlePublisher.complete()  //complete the publisher, allowing the buffer to be reclaimed
-                    }
+            val singlePublisher = CorePublisher<Int>()
+            singlePublisher.buffer().also {
+                list.forEach { singlePublisher.emitNext(it) } // then emit the each list element into it
+                singlePublisher.complete()  //complete the publisher, allowing the buffer to be reclaimed (the subscriber which is notified of completion (onComplete()) is an internal subscriber created by the flatmap, NOT the end susbscriber.
             }
         }.subscribe { result.add(it) }  //the subscriber is getting the individual elements
         listPublisher.emitNext((1..100).toList())
         listPublisher.complete()
-
         assertThat(result).isEqualTo((1..100).toList())
     }
 
