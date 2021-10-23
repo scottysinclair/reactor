@@ -48,7 +48,11 @@ fun <T> List<Publisher<T>>.concat() = ConcatPublisher(this).presentAsFlux()
  * Fliltering a Flux returns a Flux
  */
 fun <T> Flux<T>.filter(predicate: (T) -> Boolean) = FilteredPublisher(predicate, this).presentAsFlux()
-//TODO: is the contract of filtering a mono the same as filtering a flux??
+
+/**
+ * A filtered Mono, when the predicate is false, it will just complete without emitting anything
+ */
+fun <T> Mono<T>.filter(predicate: (T) -> Boolean) = FilteredPublisher(predicate, this).presentAsMono()
 
 
 /**
