@@ -7,9 +7,9 @@ import org.reactivestreams.Subscription
 /**
  * Subscriptions to CollectPublisher will receive all events collected together (List<T>) when the parent Publisher completes.
  */
-class CollectPublisher<T>(val publisher: Publisher<T>) : Publisher<List<T>> {
+class CollectPublisher<T>(val parentPublisher: Publisher<T>) : Publisher<List<T>> {
     override fun subscribe(subscriber: Subscriber<in List<T>>) {
-        publisher.subscribe(CollectSubscriber(subscriber))
+        parentPublisher.subscribe(CollectSubscriber(subscriber))
     }
 }
 

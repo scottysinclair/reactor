@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong
  * The BufferedPublisher subscribes to the parentPublisher immediately (in order to get the data upfront even if there is noone subscribing to it)
  * The BufferedPublisher then cancels the subscription to the parentPublisher when it's last subscriber is removed
  */
-class BufferedPublisher<T>(parentPublisher: Publisher<T>) : Publisher<T> {
+class BufferedPublisher<T>(val parentPublisher: Publisher<T>) : Publisher<T> {
     val bufferedSubscriber = BufferedSubscriber<T>()
     init {
         /*

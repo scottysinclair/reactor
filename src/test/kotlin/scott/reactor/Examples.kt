@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import scott.reactor.core.subscribe
 import scott.reactor.api.*
+import scott.reactor.diagram.toYumlString
 
 class Examples {
 
@@ -56,7 +57,7 @@ class Examples {
         val numbersPublisher = Sinks.many<Int>()
         val results = mutableListOf<String>()
 
-        numbersPublisher.filter { it % 2 == 0 }  .map { "number $it" }.subscribe {  results.add(it) }
+        numbersPublisher.filter { it % 2 == 0 }.map { "number $it" }.also { println(it.toYumlString()) }.subscribe {  results.add(it) }
         (1..100).forEach { i -> numbersPublisher.emitNext(i) }
 
         assertThat(results).isEqualTo((1..100).filter { it % 2 == 0 }.map { "number $it" }.toList())
@@ -127,6 +128,8 @@ class Examples {
         //create 100 publishers from the numbersPublisher for numbers 1..100, concat them together and collect all into a list
         val complexPublisher = (1..100).map { i ->  numbersPublisher.filter { it == i }.next()  }.concat().collectList()
 
+        //println(complexPublisher.toYumlString())
+
         //subscribe to that in 3 different ways, to see that the subscriptions are completely independent
         complexPublisher.subscribe { listOfNumbers -> results1.add(listOfNumbers) }
         complexPublisher.map { list -> list.filter { it % 2 == 0 } }.subscribe { listOfNumbers -> results2.add(listOfNumbers) }
@@ -149,7 +152,7 @@ class Examples {
         /*
          * subscribe to the publication of age '10' and name 'John' and combine both in an output which we subscribe to.
          */
-        agePublisher.filter { it ==10 }.flatMap { number10 -> namePublisher.filter { it == "John" }.map { name -> "$name is $number10 years old" } }.subscribe {  result.add(it) }
+        agePublisher.filter { it == 10 }.flatMap { number10 -> namePublisher.filter { it == "John" }.map { name -> "$name is $number10 years old" } }.also { println(it.toYumlString()) }.subscribe {  result.add(it) }
 
         (1..10).forEach { agePublisher.emitNext(it) }
         listOf("Fred", "Ian", "John").forEach { namePublisher.emitNext(it) }
@@ -164,9 +167,13 @@ class Examples {
 
         //classic flatmap List<List<T>> to List<T> or in reactor world Publisher<List<T>> Publisher<T>
         listPublisher.flatMap { list ->
+            /*
+             * Each time a List<Int> is received, create a new BufferedPublisher<Int> and publish all values into it
+             * The downstream  Subscriber<Int> will sequentially receive all Int values via these BufferedPublisher<Int>
+             */
             val singlePublisher = Sinks.many<Int>()
             singlePublisher.buffer().also {
-                list.forEach { singlePublisher.emitNext(it) } // then emit the each list element into it
+                list.forEach { singlePublisher.emitNext(it) } // then emit each list element into it
                 singlePublisher.complete()  //complete the publisher, allowing the buffer to be reclaimed (the subscriber which is notified of completion (onComplete()) is an internal subscriber created by the flatmap, NOT the end susbscriber.
             }
         }.subscribe { result.add(it) }  //the subscriber is getting the individual elements

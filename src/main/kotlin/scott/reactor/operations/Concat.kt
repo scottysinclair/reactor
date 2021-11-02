@@ -8,9 +8,9 @@ import org.reactivestreams.Subscription
  * Subscriptions to ConcatPublisher will receive events from Publisher[0] until it completes, then Publisher[1], etc...
  * Subscriptions to ConcatPublisher complete when the last Publisher completes (Publisher[N-1])
  */
-class ConcatPublisher<T>(val publishers: List<Publisher<T>>) : Publisher<T> {
+class ConcatPublisher<T>(val parentPublishers: List<Publisher<T>>) : Publisher<T> {
     override fun subscribe(subscriber: Subscriber<in T>) {
-        ConcatSubscriber(subscriber, publishers).start()
+        ConcatSubscriber(subscriber, parentPublishers).start()
     }
 }
 

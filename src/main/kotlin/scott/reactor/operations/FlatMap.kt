@@ -8,9 +8,9 @@ import scott.reactor.core.subscribe
 /**
  * Subscriptions to FlatMapPublisher receive events emitted from each Publisher<DEST> provided by the flatMapper(event) function
  */
-class FlatMapPublisher<SOURCE, DEST>(val flatMapper: (SOURCE) -> Publisher<DEST>, val publisher: Publisher<SOURCE>) : Publisher<DEST> {
+class FlatMapPublisher<SOURCE, DEST>(val flatMapper: (SOURCE) -> Publisher<DEST>, val parentPublisher: Publisher<SOURCE>) : Publisher<DEST> {
     override fun subscribe(subscriber: Subscriber<in DEST>) {
-        publisher.subscribe(FlatMapSubscriber(flatMapper, subscriber))
+        parentPublisher.subscribe(FlatMapSubscriber(flatMapper, subscriber))
     }
 }
 
