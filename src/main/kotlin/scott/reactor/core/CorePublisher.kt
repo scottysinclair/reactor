@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * A Publisher to which Subscribers subscribe
  */
 class CorePublisher<T> : Publisher<T> {
-    private val subs = mutableListOf<CoreSubscription<T>>()
+    val subs = mutableListOf<CoreSubscription<T>>()
     private val completed = AtomicBoolean(false)
 
     /**

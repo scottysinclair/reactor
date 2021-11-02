@@ -60,6 +60,8 @@ class Examples {
         numbersPublisher.filter { it % 2 == 0 }.map { "number $it" }.also { println(it.toYumlString()) }.subscribe {  results.add(it) }
         (1..100).forEach { i -> numbersPublisher.emitNext(i) }
 
+        println(numbersPublisher.toYumlString())
+
         assertThat(results).isEqualTo((1..100).filter { it % 2 == 0 }.map { "number $it" }.toList())
     }
 
@@ -126,12 +128,15 @@ class Examples {
         val results3 = mutableListOf<List<Int>>()
 
         //create 100 publishers from the numbersPublisher for numbers 1..100, concat them together and collect all into a list
-        val complexPublisher = (1..100).map { i ->  numbersPublisher.filter { it == i }.next()  }.concat().collectList()
+        val complexPublisher = (1..10).map { i ->  numbersPublisher.filter { it == i }.next()  }.concat().collectList()
 
         //println(complexPublisher.toYumlString())
 
         //subscribe to that in 3 different ways, to see that the subscriptions are completely independent
-        complexPublisher.subscribe { listOfNumbers -> results1.add(listOfNumbers) }
+        complexPublisher.subscribe { listOfNumbers -> results1.add(listOfNumbers) }.also { println(it.toYumlString()) }
+
+        println(complexPublisher.toYumlString())
+
         complexPublisher.map { list -> list.filter { it % 2 == 0 } }.subscribe { listOfNumbers -> results2.add(listOfNumbers) }
         complexPublisher.map { list -> list.filter { it % 3 == 0 } }.subscribe { listOfNumbers -> results3.add(listOfNumbers) }
 

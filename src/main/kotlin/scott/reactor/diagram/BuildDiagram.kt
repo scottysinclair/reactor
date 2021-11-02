@@ -1,9 +1,12 @@
 package scott.reactor.diagram
 
 import org.reactivestreams.Publisher
+import org.reactivestreams.Subscriber
 import scott.reactor.api.Flux
 import scott.reactor.api.Mono
 import scott.reactor.core.CorePublisher
+import scott.reactor.core.CoreSubscriber
+import scott.reactor.core.subscribe
 import scott.reactor.operations.*
 
 
@@ -42,10 +45,53 @@ fun build(diagram: DependencyDiagram, publisher: Publisher<*>) {
             }
         }
         is CorePublisher<*> -> {
-            //NOOP
+            publisher.subs.forEach { sub ->
+                diagram.link(publisher.nodeName(), sub.subscriber.nodeName(), "subscription", LinkType.DEPENDENCY)
+                build(diagram, sub.subscriber)
+            }
         }
         else -> throw IllegalStateException("Cannot draw publisher: " + publisher.nodeName())
     }
+}
+
+fun build(diagram: DependencyDiagram, subscriber: Subscriber<*>) {
+    when(subscriber) {
+        is BufferedSubscriber<*> -> {
+            subscriber.subscriptions.forEach {
+                diagram.link(subscriber.nodeName(), it.subscriber.nodeName(), "", LinkType.DEPENDENCY)
+                build(diagram, it.subscriber)
+            }
+        }
+        is CollectSubscriber<*> -> {
+            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "", LinkType.DEPENDENCY)
+            build(diagram, subscriber.subscriber)
+        }
+        is ConcatSubscriber<*> -> {
+            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "", LinkType.DEPENDENCY)
+            build(diagram, subscriber.subscriber)
+        }
+        is FilteredSubscriber<*> -> {
+            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "", LinkType.DEPENDENCY)
+            build(diagram, subscriber.subscriber)
+        }
+        is MappedSubscriber<*,*> -> {
+            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "", LinkType.DEPENDENCY)
+            build(diagram, subscriber.subscriber)
+        }
+        is FlatMapSubscriber<*,*> -> {
+            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "", LinkType.DEPENDENCY)
+            build(diagram, subscriber.subscriber)
+        }
+        is NextSubscriber<*> -> {
+            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "", LinkType.DEPENDENCY)
+            build(diagram, subscriber.subscriber)
+        }
+        is CoreSubscriber<*> -> {
+            //NOOP
+        }
+        else -> throw IllegalStateException("Cannot draw subscriber: " + subscriber.nodeName())
+    }
+
 }
 
 fun <T> Publisher<T>.nodeName() : String {
@@ -56,5 +102,8 @@ fun <T> Publisher<T>.nodeName() : String {
   }
 }
 
+fun <T> Subscriber<T>.nodeName() : String = "${javaClass.simpleName}${System.identityHashCode(this)}"
+
 
 fun <T> Publisher<T>.toYumlString() = DependencyDiagram().also { build(it, this) }.toYumlString()
+fun <T> Subscriber<T>.toYumlString() = DependencyDiagram().also { build(it, this) }.toYumlString()

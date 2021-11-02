@@ -1,9 +1,10 @@
 package scott.reactor.core
 
 import org.reactivestreams.Publisher
+import org.reactivestreams.Subscriber
 import kotlin.math.min
 
-fun <T> Publisher<T>.subscribe(consumer : (T) -> Unit) = subscribe(CoreSubscriber(consumer))
+fun <T> Publisher<T>.subscribe(consumer : (T) -> Unit) :Subscriber<T> = CoreSubscriber(consumer).also { subscribe(it) }
 
 fun <T> MutableList<T>.syncAdd(value : T) = synchronized(this) { add(value) }
 
