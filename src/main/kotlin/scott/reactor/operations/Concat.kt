@@ -18,7 +18,7 @@ class ConcatPublisher<T>(val parentPublishers: List<Publisher<T>>) : Publisher<T
  * Iteratively subscribes to each parent Publisher forwarding the events to Subscriber<T> until the parent completes, then moves onto the next...
  * Provides Subscriber<T> with a single constant Subscription until final completion
  */
-class ConcatSubscriber<T>(val subscriber: Subscriber<in T>, publishers: List<Publisher<T>>) : Subscriber<T>, Subscription {
+class ConcatSubscriber<T>(val subscriber: Subscriber<in T>, val publishers: List<Publisher<T>>) : Subscriber<T>, Subscription {
     /**
      * our iterator across the parent publishers
      */

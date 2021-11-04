@@ -6,7 +6,6 @@ import scott.reactor.api.Flux
 import scott.reactor.api.Mono
 import scott.reactor.core.CorePublisher
 import scott.reactor.core.CoreSubscriber
-import scott.reactor.core.subscribe
 import scott.reactor.operations.*
 
 
@@ -15,32 +14,32 @@ fun build(diagram: DependencyDiagram, publisher: Publisher<*>) {
         is Mono<*> -> build(diagram, publisher.wrapping)
         is Flux<*> -> build(diagram, publisher.wrapping)
         is BufferedPublisher<*> -> {
-            diagram.link(publisher.nodeName(), publisher.parentPublisher.nodeName(), "", LinkType.DEPENDENCY_DASHED)
+            diagram.link(publisher.nodeName(), publisher.parentPublisher.nodeName(), "decor", LinkType.DEPENDENCY_DASHED)
             build(diagram, publisher.parentPublisher)
         }
         is MappedPublisher<*,*> -> {
-            diagram.link(publisher.nodeName(), publisher.parentPublisher.nodeName(), "", LinkType.DEPENDENCY_DASHED)
+            diagram.link(publisher.nodeName(), publisher.parentPublisher.nodeName(), "decor", LinkType.DEPENDENCY_DASHED)
             build(diagram, publisher.parentPublisher)
         }
         is FilteredPublisher<*> -> {
-            diagram.link(publisher.nodeName(), publisher.parentPublisher.nodeName(), "", LinkType.DEPENDENCY_DASHED)
+            diagram.link(publisher.nodeName(), publisher.parentPublisher.nodeName(), "decor", LinkType.DEPENDENCY_DASHED)
             build(diagram, publisher.parentPublisher)
         }
         is FlatMapPublisher<*,*> -> {
-            diagram.link(publisher.nodeName(), publisher.parentPublisher.nodeName(), "", LinkType.DEPENDENCY_DASHED)
+            diagram.link(publisher.nodeName(), publisher.parentPublisher.nodeName(), "decor", LinkType.DEPENDENCY_DASHED)
             build(diagram, publisher.parentPublisher)
         }
         is NextPublisher<*> -> {
-            diagram.link(publisher.nodeName(), publisher.parentPublisher.nodeName(), "", LinkType.DEPENDENCY_DASHED)
+            diagram.link(publisher.nodeName(), publisher.parentPublisher.nodeName(), "decor", LinkType.DEPENDENCY_DASHED)
             build(diagram, publisher.parentPublisher)
         }
         is CollectPublisher<*> -> {
-            diagram.link(publisher.nodeName(), publisher.parentPublisher.nodeName(), "", LinkType.DEPENDENCY_DASHED)
+            diagram.link(publisher.nodeName(), publisher.parentPublisher.nodeName(), "decor", LinkType.DEPENDENCY_DASHED)
             build(diagram, publisher.parentPublisher)
         }
         is ConcatPublisher<*> -> {
             publisher.parentPublishers.forEachIndexed { i, pub ->
-                diagram.link(publisher.nodeName(), pub.nodeName(), "", LinkType.DEPENDENCY_DASHED)
+                diagram.link(publisher.nodeName(), pub.nodeName(), "decor", LinkType.DEPENDENCY_DASHED)
                 build(diagram, pub)
             }
         }
@@ -58,32 +57,32 @@ fun build(diagram: DependencyDiagram, subscriber: Subscriber<*>) {
     when(subscriber) {
         is BufferedSubscriber<*> -> {
             subscriber.subscriptions.forEach {
-                diagram.link(subscriber.nodeName(), it.subscriber.nodeName(), "", LinkType.DEPENDENCY)
+                diagram.link(subscriber.nodeName(), it.subscriber.nodeName(), "emit", LinkType.DEPENDENCY)
                 build(diagram, it.subscriber)
             }
         }
         is CollectSubscriber<*> -> {
-            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "", LinkType.DEPENDENCY)
+            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "emit", LinkType.DEPENDENCY)
             build(diagram, subscriber.subscriber)
         }
         is ConcatSubscriber<*> -> {
-            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "", LinkType.DEPENDENCY)
+            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "emit", LinkType.DEPENDENCY)
             build(diagram, subscriber.subscriber)
         }
         is FilteredSubscriber<*> -> {
-            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "", LinkType.DEPENDENCY)
+            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "emit", LinkType.DEPENDENCY)
             build(diagram, subscriber.subscriber)
         }
         is MappedSubscriber<*,*> -> {
-            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "", LinkType.DEPENDENCY)
+            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "emit", LinkType.DEPENDENCY)
             build(diagram, subscriber.subscriber)
         }
         is FlatMapSubscriber<*,*> -> {
-            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "", LinkType.DEPENDENCY)
+            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "emit", LinkType.DEPENDENCY)
             build(diagram, subscriber.subscriber)
         }
         is NextSubscriber<*> -> {
-            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "", LinkType.DEPENDENCY)
+            diagram.link(subscriber.nodeName(), subscriber.subscriber.nodeName(), "emit", LinkType.DEPENDENCY)
             build(diagram, subscriber.subscriber)
         }
         is CoreSubscriber<*> -> {

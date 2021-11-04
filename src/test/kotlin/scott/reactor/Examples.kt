@@ -35,7 +35,7 @@ class Examples {
         val numbersPublisher = Sinks.many<Int>()
         val results = mutableListOf<String>()
 
-        numbersPublisher.map { "number $it" }.subscribe {  results.add(it) }
+        numbersPublisher.map { "number $it" }.apply { subscribe {  results.add(it) }; println(toYumlString()) }
         (1..100).forEach { i -> numbersPublisher.emitNext(i) }
 
         assertThat(results).isEqualTo((1..100).map { "number $it" }.toList())
@@ -128,7 +128,7 @@ class Examples {
         val results3 = mutableListOf<List<Int>>()
 
         //create 100 publishers from the numbersPublisher for numbers 1..100, concat them together and collect all into a list
-        val complexPublisher = (1..10).map { i ->  numbersPublisher.filter { it == i }.next()  }.concat().collectList()
+        val complexPublisher = (1..100).map { i ->  numbersPublisher.filter { it == i }.next()  }.concat().collectList()
 
         //println(complexPublisher.toYumlString())
 
@@ -139,6 +139,8 @@ class Examples {
 
         complexPublisher.map { list -> list.filter { it % 2 == 0 } }.subscribe { listOfNumbers -> results2.add(listOfNumbers) }
         complexPublisher.map { list -> list.filter { it % 3 == 0 } }.subscribe { listOfNumbers -> results3.add(listOfNumbers) }
+
+        println(complexPublisher.toYumlString())
 
         (1..100).forEach { i -> numbersPublisher.emitNext(i) }
 
