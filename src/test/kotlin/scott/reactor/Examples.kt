@@ -57,10 +57,8 @@ class Examples {
         val numbersPublisher = Sinks.many<Int>()
         val results = mutableListOf<String>()
 
-        numbersPublisher.filter { it % 2 == 0 }.map { "number $it" }.also { println(it.toYumlString()) }.subscribe {  results.add(it) }
+        numbersPublisher.filter { it % 2 == 0 }.map { "number $it" }.apply { subscribe {  results.add(it) }; println(toYumlString()) }
         (1..100).forEach { i -> numbersPublisher.emitNext(i) }
-
-        println(numbersPublisher.toYumlString())
 
         assertThat(results).isEqualTo((1..100).filter { it % 2 == 0 }.map { "number $it" }.toList())
     }
@@ -70,7 +68,7 @@ class Examples {
         val numbersPublisher = Sinks.many<Int>()
         val results = mutableListOf<Int>()
 
-        numbersPublisher.filter { it == 5 }.next().subscribe {  results.add(it) }
+        numbersPublisher.filter { it == 5 }.next().apply { subscribe {  results.add(it) }; println(toYumlString()) }
         val source = listOf(1,2,3,4,5,5,5,5)
         source.forEach { i -> numbersPublisher.emitNext(i) }
 
@@ -138,7 +136,7 @@ class Examples {
         complexPublisher.map { list -> list.filter { it % 2 == 0 } }.subscribe { listOfNumbers -> results2.add(listOfNumbers) }
         complexPublisher.map { list -> list.filter { it % 3 == 0 } }.subscribe { listOfNumbers -> results3.add(listOfNumbers) }
 
-        println(complexPublisher.toYumlString())
+        println(complexPublisher.toYumlString()) //a really nice diagram
 
         (1..10).forEach { i -> numbersPublisher.emitNext(i) }
 
@@ -181,7 +179,7 @@ class Examples {
                 list.forEach { singlePublisher.emitNext(it) } // then emit each list element into it
                 singlePublisher.complete()  //complete the publisher, allowing the buffer to be reclaimed (the subscriber which is notified of completion (onComplete()) is an internal subscriber created by the flatmap, NOT the end susbscriber.
             }
-        }.subscribe { result.add(it) }  //the subscriber is getting the individual elements
+        }.apply { subscribe { result.add(it) }; println(toYumlString()) }  //the subscriber is getting the individual elements
         listPublisher.emitNext((1..100).toList())
         listPublisher.complete()
         assertThat(result).isEqualTo((1..100).toList())
