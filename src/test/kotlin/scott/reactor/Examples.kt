@@ -128,7 +128,7 @@ class Examples {
         val results3 = mutableListOf<List<Int>>()
 
         //create 100 publishers from the numbersPublisher for numbers 1..100, concat them together and collect all into a list
-        val complexPublisher = (1..100).map { i ->  numbersPublisher.filter { it == i }.next()  }.concat().collectList()
+        val complexPublisher = (1..10).map { i ->  numbersPublisher.filter { it == i }.next()  }.concat().collectList()
 
         //println(complexPublisher.toYumlString())
 
@@ -142,12 +142,12 @@ class Examples {
 
         println(complexPublisher.toYumlString())
 
-        (1..100).forEach { i -> numbersPublisher.emitNext(i) }
+        (1..10).forEach { i -> numbersPublisher.emitNext(i) }
 
         //each result is correctly (and independently) populated from the subscription
-        assertThat(results1).isEqualTo(listOf((1..100).toList()))
-        assertThat(results2).isEqualTo(listOf((1..100).filter { it % 2 == 0 }.toList()))
-        assertThat(results3).isEqualTo(listOf((1..100).filter { it % 3 == 0 }.toList()))
+        assertThat(results1).isEqualTo(listOf((1..10).toList()))
+        assertThat(results2).isEqualTo(listOf((1..10).filter { it % 2 == 0 }.toList()))
+        assertThat(results3).isEqualTo(listOf((1..10).filter { it % 3 == 0 }.toList()))
     }
 
     @Test
