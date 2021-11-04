@@ -135,8 +135,6 @@ class Examples {
         //subscribe to that in 3 different ways, to see that the subscriptions are completely independent
         complexPublisher.subscribe { listOfNumbers -> results1.add(listOfNumbers) }.also { println(it.toYumlString()) }
 
-        println(complexPublisher.toYumlString())
-
         complexPublisher.map { list -> list.filter { it % 2 == 0 } }.subscribe { listOfNumbers -> results2.add(listOfNumbers) }
         complexPublisher.map { list -> list.filter { it % 3 == 0 } }.subscribe { listOfNumbers -> results3.add(listOfNumbers) }
 
